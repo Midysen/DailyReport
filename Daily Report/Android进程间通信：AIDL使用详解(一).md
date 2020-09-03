@@ -1,4 +1,4 @@
-# Android进程间通信（一）：AIDL使用详解
+# Android进程间通信：AIDL使用详解（一）
 ## 一、概述
 AIDL是Android Interface Definition Language的缩写，即Android接口定义语言。它是Android的进程间通信比较常用的一种方式。
 
