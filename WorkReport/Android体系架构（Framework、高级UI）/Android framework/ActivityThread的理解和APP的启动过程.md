@@ -228,9 +228,9 @@ APP的启动，我们使用一张图来说明这个启动过程，顺便也总�
 在上面学习APP的启动过程中，看源码的同时注意到一个代码，就是主线程Handler在接收到LAUNCH_ACTIVITY创建Activity的消息后，创建Activity的部分代码如下：
 主线程Handler接收到创建Activity的消息LAUNCH_ACTIVITY后，最终会调用performLaunchActivity方法
 performLaunchActivity方法会通过反射去创建一个Activity，然后会调用Activity的各个生命周期方法
-    ```
+```
     private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) {
-        ...
+        ........
         ContextImpl appContext = createBaseContextForActivity(r);
         Activity activity = null;
         try {
@@ -257,11 +257,11 @@ performLaunchActivity方法会通过反射去创建一个Activity，然后会调
  ```
  
 在上面的代码中，简单注释了一下在Activity的创建方法中，会再次调用Application的创建方法（第一次调用是在接收到BIND_APPLICATION消息的时候），个人觉得这里再次调用Application的创建方法，除了获取已经存在的Application实例这种情况，另外一种情况还有可能是要创建的这个Activity属于另外一个进程，当去启动这个新进程中的Activity时，会先去创建新进程和Application实例，因为我们知道一个常识：
-- 1.APP中有几个进程，Application会被创建几次
-- 2.新进程中所有变量和单例会失效，因为新进程有一块新的内存区域
+- APP中有几个进程，Application会被创建几次
+- 新进程中所有变量和单例会失效，因为新进程有一块新的内存区域
 那么这两点的关系就是，因为新进程中Application实例会为空，所以会再次去创建Application实例，这也就是第一点中我们所说的常识：APP中有几个进程，Application会被创建几次
-    创建Application的方法
-    ```
+创建Application的方法
+```
     public Application makeApplication(boolean forceDefaultAppClass, Instrumentation instrumentation) {
         如果存在Application的实例，则直接返回，这也说明Application是个单例
         if (mApplication != null) {
@@ -269,7 +269,7 @@ performLaunchActivity方法会通过反射去创建一个Activity，然后会调
         }
 
         Application app = null;
-        ...创建Application
+        ......创建Application
         return app;
 ｝
 ```
