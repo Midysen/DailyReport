@@ -214,7 +214,7 @@ APP的启动可以简单总结为一下几个流程：
 - Instrumentation：可以理解为ActivityThread的一个工具类，在ActivityThread中初始化，一个进程只存在一个Instrumentation对象，在每个Activity初始化时，会通过Activity的Attach方法，将该引用传递给Activity。Activity所有生命周期的方法都有该类来执行
 ### APP的启动过程
 APP的启动，我们使用一张图来说明这个启动过程，顺便也总结下上面所说的ActivityThread的main方法执行到Activity的创建之间的流程。图是从网上盗的…
-![avatar](https://img-blog.csdnimg.cn/20190103210016632.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2h6d2FpbGxs,size_16,color_FFFFFF,t_70)
+![avatar](https://github.com/Midysen/WorkSummary/blob/master/WorkReport/Android%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84%EF%BC%88Framework%E3%80%81%E9%AB%98%E7%BA%A7UI%EF%BC%89/Android%20framework/20190103210016632.png)
 - 1.点击桌面APP图标时，Launcher的startActivity()方法，通过Binder通信，调用system_server进程中AMS服务的startActivity方法，发起启动请求
 - 2.system_server进程接收到请求后，向Zygote进程发送创建进程的请求
 - 3.Zygote进程fork出App进程，并执行ActivityThread的main方法，创建ActivityThread线程，初始化MainLooper，主线程Handler，同时初始化ApplicationThread用于和AMS通信交互
