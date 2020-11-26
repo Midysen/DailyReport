@@ -7,3 +7,47 @@ sudo qemu-system-x86_64  -cdrom android-x86_7.1/out/target/product/x86_64/androi
 - adb shell
   -  setprop persist.fb.vmifb 0
   -  dumpsys SurfaceFlinger --switchPrimaryCompose
+
+
+# jcenter下载不了时，用国内镜像下载解决
+```
+
+    buildscript{
+
+        repositories{
+
+            maven{ url'http://maven.aliyun.com/nexus/content/groups/public/' }
+
+            maven{ url'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+
+            google()
+
+    }
+
+        dependencies{
+
+            classpath'com.android.tools.build:gradle:3.1.4'
+
+            // NOTE: Do not place your application dependencies here; they belong
+
+    // in the individual module build.gradle files
+
+        }
+
+    }
+
+    allprojects{
+
+        repositories{
+
+            maven{ url'http://maven.aliyun.com/nexus/content/groups/public/' }
+
+            maven{ url'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+
+    }
+
+    }
+
+
+
+```
