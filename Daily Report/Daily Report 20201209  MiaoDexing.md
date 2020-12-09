@@ -62,4 +62,21 @@ public void fling(int startX, int startY, int velocityX, int velocityY,
 视图会快速滚动，并且在手指立刻屏幕之后也会滚动一段时间。fling就是根据你的滑动方向与轻重，自动滑动一段距离。
 Filing手势在android交互设计中应用非常广泛：电子书的滑动翻页、ListView滑动删除item、滑动解锁等。
 
-Scroller提供了很多方法，但这些只是工具，具体的滚动逻辑还是由我们程序猿来进行移动内容实现。
+Scroller提供了很多方法，但这些只是工具，具体的滚动逻辑还是由我们程序员来进行移动内容实现。
+
+# 结论：
+- 目前明确的是视图滑动的优化的可行性方案有两方面：
+  -  1、直接优化摩擦系数也就是
+```
+   private float computeDeceleration(float friction) {
+203         return SensorManager.GRAVITY_EARTH   // g (m/s^2)
+204                       * 39.37f               // inch/meter
+205                       * mPpi                 // pixels per inch                                                                                                                                                
+206                       * 0.84f;
+207     }
+  
+  ```
+
+ 目前已经可以看到效果，但是因为用户机型繁多，需要做一定适配，也就是在何种区间摩擦系数应该为多少，否则用户的应用速度体验感会很差。
+ 特别是会出现滑动速度非常快的情况。
+    - 2、fling方法中的速度velocity值，设想是改变速度值为一定合理区间
