@@ -6,8 +6,6 @@ COPY ./file.sh/  /
 COPY ./test.sh/  /
 ENTRYPOINT ["/bin/bash"]
 CMD ["/file.sh","arg1", "arg2"]
-
-
 ```
 
 - FROM：定制的镜像都是基于 FROM 的镜像，这里的 nginx 就是定制需要的基础镜像。后续的操作都是基于 nginx。
@@ -50,3 +48,10 @@ CMD ["/file.sh","arg1", "arg2"]
    docker build -t test . 
    docker run -i -t test 
    ```
+
+
+# 通过ssh连接服务器，将华为云主机映射到本地
+```
+#ssh -L     $port:10.237.0.$j:5555 $REMOTE_SERVER -i $PRIVATE_KEY -Nf
+sudo ssh -L 47002:10.237.0.4:5555  05e13946c00025e22f71c0170fb294fe@122.9.67.152  -i KeyPair-d6c4.pem  -Nf
+```
