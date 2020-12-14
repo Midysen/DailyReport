@@ -45,4 +45,8 @@ CMD ["/file.sh","arg1", "arg2"]
 
    可以搭配 CMD 命令使用：一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参，以下示例会提到。
    ```
-    
+- 然后在主机外壳
+   ```
+   docker build -t test . 
+   docker run -i -t test 
+   ```
