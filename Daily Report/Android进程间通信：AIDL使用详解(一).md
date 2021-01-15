@@ -138,7 +138,7 @@ compileSdkVersion 28
 ...
 sourceSets {
     main {
-        java.srcDirs = ["src/main/java", "src/main/aidl"]
+        java.srcDirs = ['src/main/java', 'src/main/aidl']
     }
 }
 }
