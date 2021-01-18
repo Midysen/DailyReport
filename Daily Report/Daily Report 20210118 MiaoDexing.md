@@ -91,7 +91,8 @@ public class CarService extends Service {
         // 在这里new出来各个继承carServiceBase的aidl服务。然后保存在数组allServices中
         mContext = serviceContext;
         mSystemInterface = systemInterface;
-        mHal = new VehicleHal(vehicle); //注意vehicle传参到这里去了，这里有一个变量 HalClient，其实Hal vehicle 和 Java framework层的信息传递就是通过作为“client”连接下面的hal service，后面会讲到
+        mHal = new VehicleHal(vehicle); //注意vehicle传参到这里去了，这里有一个变量 HalClient，其实Hal vehicle 
+                                        //和 Java framework层的信息传递就是通过作为“client”连接下面的hal service，后面会讲到
         mVehicleInterfaceName = vehicleInterfaceName;
         mSystemActivityMonitoringService = new SystemActivityMonitoringService(serviceContext);
         mCarPowerManagementService = new CarPowerManagementService(mContext, mHal.getPowerHal(),
@@ -121,12 +122,12 @@ public class CarService extends Service {
         mCarDiagnosticService = new CarDiagnosticService(serviceContext, mHal.getDiagnosticHal());
         mCarStorageMonitoringService = new CarStorageMonitoringService(serviceContext,
                 systemInterface);
-        //---------------begin modify by SamZhang---------------------
+        //---------------begin modify ---------------------
         //mCarConfigurationService =
         //        new CarConfigurationService(serviceContext, new JsonReaderImpl());
         mCarConfigurationService =
                 new CarConfigurationService(serviceContext, new JsonImpl());
-        //---------------end--------------------------------------------
+        //---------------end-------------------------------
         mUserManagerHelper = new CarUserManagerHelper(serviceContext);
         mCarLocationService = new CarLocationService(mContext, mCarPowerManagementService,
                 mCarPropertyService, mUserManagerHelper);
@@ -189,7 +190,8 @@ public class CarPropertyService extends ICarProperty.Stub
         }
     }
     .........
-    这里的主要的方法有getProperty setProperty onPropertyChange, get setProperty()最终会调用到HAL Vehicle中的实现， onPropertyChange（）是HAL Vehicle 从CAN盒哪里读到变化通知Java层的方法。我们下面就围绕着三个方法
+    这里的主要的方法有getProperty setProperty onPropertyChange, get setProperty()最终会调用到HAL Vehicle中的实现， 
+    onPropertyChange（）是HAL Vehicle 从CAN盒哪里读到变化通知Java层的方法。我们下面就围绕着三个方法
         @Override
     public List<CarPropertyConfig> getPropertyList() {
         List<CarPropertyConfig> returnList = new ArrayList<CarPropertyConfig>();
@@ -289,8 +291,7 @@ public class CarPropertyService extends ICarProperty.Stub
 
 
 ```
-我们可以看到上面CarPropertyService调用 set getProperty的地方都最后都是调用了mHal 对象的set 和 getProperty，
-而 CarPropertyService的mHal的赋值来自IcarImpl中。
+我们可以看到上面CarPropertyService调用 set getProperty的地方都最后都是调用了mHal 对象的set 和 getProperty，而 CarPropertyService的mHal的赋值来自ICarImpl中。
 ICarImpl构造函数 mHal = new VehicleHal(vehicle) -> VehicleHal构造函数 mPropertyHal = new PropertyHalService(this); -> PropertyHalService getPropertyHal() -> mCarPropertyService = new CarPropertyService(serviceContext, mHal.getPropertyHal());
 -> CarPropertyService构造函数 CarPropertyService(Context context, PropertyHalService hal) { mHal = hal}
 
@@ -560,6 +561,7 @@ class  HalClient {
 }
 ```
 HalClient并没有直接调用到CarPropertyService的 onPropertyChange（），而是通过 VehicleHal -> PropertyHalService -> CarPropertyService的
+
 - packages/services/Car/service/src/com/android/car/hal/VehicleHal.java
 ```
 public class VehicleHal extends IVehicleCallback.Stub { // VehicleHal 也是继承自IVehicleCallback但是它的onPropertyEvent回调 实际是来自HalClient。
@@ -757,6 +759,4 @@ public class CarPropertyService extends ICarProperty.Stub
 
 ```
 
-至此以上就是围绕 CarPropertyService 分析了 如何 setProperty 、getProperty 以及HAL Vehicle Service的回调通知
-
-后面HAL 层的 Vehicle Service待续 。。。。。
+至此以上就是围绕 CarPropertyService 分析了 如何 setProperty 、getProperty 以及HAL Vehicle Service的回调通知.
