@@ -3,11 +3,7 @@
 
 ## 一、Java Framework层
 ### CarService
-CarService也是继承自service的，所以Carservice也是一个service，代码目录在 packages/services/Car/service/src/com/android/car/CarService.java，
-我自己理解的这个service就是直接hidl调用底层的VehicleService（C++）、
-然后将各个Car相关的service拉起来，这里的其他car service并不是直接继承service的，而是继承自CarServiceBase的各个“server”，
-这里其实和systemUI中启动Navigation、power、volumeBar等有点像，都是继承自一个基类，然后逐个拉起，但有所不同的是Car “server”的各个子类都是一个aidl，
-方便后面应用层直接调用，我们上代码看看启动过程。
+CarService也是继承自service的，所以Carservice也是一个service，代码目录在 packages/services/Car/service/src/com/android/car/CarService.java，我自己理解的这个service就是直接hidl调用底的VehicleService（C++）、然后将各个Car相关的service拉起来，这里的其他car service并不是直接继承service的，而是继承自CarServiceBase的各个“server”，这里其实和systemUI中启动Navigation、power、volumeBar等有点像，都是继承自一个基类，然后逐个拉起，但有所不同的是Car “server”的各个子类都是一个aidl，方便后面应用层直接调用，我们上代码看看启动过程。
 ```
 其中省略了一些不必要的代码段。
 public class CarService extends Service {
