@@ -11,6 +11,10 @@
 
 绕向上的轴旋转就是航向角-Azimuth angle.
 
+- 用R表示旋转矩阵。
+yaw（偏航） pitch（俯仰） roll（横滚）分别表示Z　Ｙ　Ｘ轴的转角。
+q=[q0,q1,q2,q3]’表示单位四元数。
+
 ![blockchain](https://imgconvert.csdnimg.cn/aHR0cDovL2ZpbGUuZWxlY2ZhbnMuY29tL3dlYjEvTTAwLzU2LzMwL280WUJBRnM4YkFHQUE1XzZBQUJRZms4WEk0STk0OS5wbmc)
 陀螺仪的 坐标系 与加速度传感器的相同。逆时针方向旋转用正值表示，也就是说，从 x、y、z 轴的正向位置观看处于原始方位的设备，如果设备逆时针旋转，将会收到正值。 这是标准的数学意义上的正向旋转定义，而与方向传感器定义的转动不同。
 
