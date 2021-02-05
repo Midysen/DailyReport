@@ -50,28 +50,28 @@ mGetDataIDMap.put(DATA_ID_CAR_HVAC_PM2_5_LEVEL, GwmCarHvacManager.ID_GWM_T_BOX_F
 
 
 # MyDataAdapter.java
-- 这里的BeanID  "car.hvac.pm2.5_level"是由仙豆提供，需要提前确认是否存在，否则要提QA
+## 这里的BeanID  "car.hvac.pm2.5_level"是由仙豆提供，需要提前确认是否存在，否则要提QA
 ```
 public static final String DATA_ID_CAR_HVAC_PM2_5_LEVEL = "car.hvac.pm2.5_level";
 ```
 
-- 这里要去建立BeanId对应的方法,仙豆写法
+## 这里要去建立BeanId对应的方法,仙豆写法
 ```
 mRequestDataOperationList.put( DATA_ID_CAR_HVAC_PM2_5_VALUE        ,mdoGetCarHvacPm25Value);
 ```
-- 实现方法
+## 实现方法
 ```
  IRequestDataOperation    mdoGetCarHvacPm25Value = (String dataId) -> {
         Log.i(TAG, "doGetCarHvacPm25Value:"+ dataId);
         mCarHvacAdapter.doGetCarHvacPm25Value(dataId);
     };
-    IRequestDataOperation    mdoGetCarHvacPm25Level = (String dataId) -> {
-        Log.i(TAG, "doGetCarHvacPm25Value:"+ dataId);
-        mCarHvacAdapter.doGetCarHvacPm25Level(dataId);
-    };
+ IRequestDataOperation    mdoGetCarHvacPm25Level = (String dataId) -> {
+     Log.i(TAG, "doGetCarHvacPm25Value:"+ dataId);
+     mCarHvacAdapter.doGetCarHvacPm25Level(dataId);
+ };
 ```
 
-- CarHvacAdapter.java
+## CarHvacAdapter.java
 
 ```
  public void doGetCarHvacPm25Value(String dataId) {
@@ -143,8 +143,199 @@ private void doGetIntProperty(String dataId, boolean isInit) {
     }
 
 ```
+### 这里重点分析相应逻辑
+- 1、
+```
+ int propId = mCarHvacDataManager.getPropertyIdForGet(dataId);
+```
+  - getPropertyIdForGet
+  ```
+   public int getPropertyIdForGet(String beanId) {
+        Integer propertyID = mGetDataIDMap.get(beanId);
+        return propertyID == null ? NO_DATA : propertyID;
+    }
+  ```
+这里的mGetDataIDMap就是之前创建的beanId与property id的一一映射表
+
+- 2、
+```
+ int dataValue = mGwmHvacManager.getIntProperty(propId, 0);
+```
+### 这里的getIntProperty方法是GwmHvacManager中的，所以我们又回到了CAR工程
+
+- GwmHvacManager.java
+```
+ public int getIntProperty(@PropertyId int propertyId, int area)
+            throws CarNotConnectedException {
+        if (DBG) {
+            Log.d(TAG, "getIntProperty propertyId=" + propertyId + " area=" + area);
+        }
+        return mCarPropertyMgr.getIntProperty(propertyId, area);
+    }
+```
+- CarPropertyManager.java
+```
+ /**
+     * Returns value of a integer property
+     *
+     * @param prop Property ID to get
+     * @param area Zone of the property to get
+     */
+    public int getIntProperty(int prop, int area) throws CarNotConnectedException {
+        CarPropertyValue<Integer> carProp = getProperty(Integer.class, prop, area);
+        return carProp != null ? carProp.getValue() : 0;
+    }
+
+```
+
+继续跟进
+```
+    public <E> CarPropertyValue<E> getProperty(Class<E> clazz, int propId, int area)
+            throws CarNotConnectedException {
+        if (mDbg) {
+            Log.d(mTag, "getProperty, propId: 0x" + toHexString(propId)
+                    + ", area: 0x" + toHexString(area) + ", class: " + clazz);
+        }
+        try {
+            CarPropertyValue<E> propVal = mService.getProperty(propId, area);
+            if (propVal != null && propVal.getValue() != null) {
+                Class<?> actualClass = propVal.getValue().getClass();
+                if (actualClass != clazz) {
+                    throw new IllegalArgumentException("Invalid property type. " + "Expected: "
+                            + clazz + ", but was: " + actualClass);
+                }
+            }
+            return propVal;
+        } catch (RemoteException e) {
+            Log.e(mTag, "getProperty failed with " + e.toString()
+                    + ", propId: 0x" + toHexString(propId) + ", area: 0x" + toHexString(area), e);
+            throw new CarNotConnectedException(e);
+        }
+    }
+```
+
+- mService类型是ICarProperty，实际在ICarProperty.aidl中，这个接口的实现在CarPropertyService.java
+
+- CarPropertyService.java
+```
+  @Override
+    public CarPropertyValue getProperty(int prop, int zone) {
+        if (mConfigs.get(prop) == null) {
+            // Do not attempt to register an invalid propId
+            Log.e(TAG, "getProperty: propId is not in config list:0x" + toHexString(prop));
+            return null;
+        }
+        ICarImpl.assertPermission(mContext, mHal.getReadPermission(prop));
+        return mHal.getProperty(prop, zone);
+    }
+
+```
+这里要去分析mHal.getProperty(prop, zone)
+
+- PropertyHalService.java
+```
+ /**
+     * Returns property or null if property is not ready yet.
+     * @param mgrPropId
+     * @param areaId
+     */
+    @Nullable
+    public CarPropertyValue getProperty(int mgrPropId, int areaId) {
+        int halPropId = managerToHalPropId(mgrPropId);
+        if (halPropId == NOT_SUPPORTED_PROPERTY) {
+            throw new IllegalArgumentException("Invalid property Id : 0x" + toHexString(mgrPropId));
+        }
+
+        VehiclePropValue value = null;
+        try {
+            value = mVehicleHal.get(halPropId, areaId);
+        } catch (PropertyTimeoutException e) {
+            Log.e(CarLog.TAG_PROPERTY, "get, property not ready 0x" + toHexString(halPropId), e);
+        }
+
+        return value == null ? null : toCarPropertyValue(value, mgrPropId);
+    }
+
+```
+
+这里要去分析mVehicleHal.get(halPropId, areaId);
 
 
+- VehicleHal.java
 
+```
+public VehiclePropValue get(int propertyId, int areaId) throws PropertyTimeoutException {
+        if (DBG) {
+            Log.i(CarLog.TAG_HAL, "get, property: 0x" + toHexString(propertyId)
+                    + ", areaId: 0x" + toHexString(areaId));
+        }
+        VehiclePropValue propValue = new VehiclePropValue();
+        propValue.prop = propertyId;
+        propValue.areaId = areaId;
+        return mHalClient.getValue(propValue);
+    }
+```
+这里要去分析 mHalClient.getValue(propValue);
 
+- HalClient.java
+
+```
+
+ VehiclePropValue getValue(VehiclePropValue requestedPropValue) throws PropertyTimeoutException {
+        final ObjectWrapper<VehiclePropValue> valueWrapper = new ObjectWrapper<>();
+        int status = invokeRetriable(() -> {
+            ValueResult res = internalGet(requestedPropValue);
+            valueWrapper.object = res.propValue;
+            return res.status;
+        }, WAIT_CAP_FOR_RETRIABLE_RESULT_MS, SLEEP_BETWEEN_RETRIABLE_INVOKES_MS);
+
+        int propId = requestedPropValue.prop;
+        int areaId = requestedPropValue.areaId;
+        if (StatusCode.INVALID_ARG == status) {
+            throw new IllegalArgumentException(
+                    String.format("Failed to get value for: 0x%x, areaId: 0x%x", propId, areaId));
+        }
+
+        if (StatusCode.TRY_AGAIN == status) {
+            throw new PropertyTimeoutException(propId);
+        }
+
+        if (StatusCode.OK != status || valueWrapper.object == null) {
+            throw new IllegalStateException(
+                    String.format("Failed to get property: 0x%x, areaId: 0x%x, "
+                            + "code: %d", propId, areaId, status));
+        }
+
+        return valueWrapper.object;
+    }
+```
+这里去看ValueResult res = internalGet(requestedPropValue);
+
+-  HalClient.java
+```
+ private ValueResult internalGet(VehiclePropValue requestedPropValue) {
+        final ValueResult result = new ValueResult();
+        try {
+            mVehicle.get(requestedPropValue,
+                    (status, propValue) -> {
+                        result.status = status;
+                        result.propValue = propValue;
+                    });
+        } catch (RemoteException e) {
+            Log.e(CarLog.TAG_HAL, "Failed to get value from vehicle HAL", e);
+            result.status = StatusCode.TRY_AGAIN;
+        }
+
+        return result;
+    }
+```
+这里重点去看
+```
+            mVehicle.get(requestedPropValue,
+                    (status, propValue) -> {
+                        result.status = status;
+                        result.propValue = propValue;
+                    });
+```
+跟踪发现IVehicle是在这里导入的` import android.hardware.automotive.vehicle.V2_0.IVehicle;`，而此代码是有诺博也就是HAL提供，我们看不到源码。
 
