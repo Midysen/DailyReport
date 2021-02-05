@@ -337,5 +337,6 @@ public VehiclePropValue get(int propertyId, int areaId) throws PropertyTimeoutEx
                         result.propValue = propValue;
                     });
 ```
-跟踪发现IVehicle是在这里导入的` import android.hardware.automotive.vehicle.V2_0.IVehicle;`，而此代码是有诺博也就是HAL提供，我们看不到源码。
+跟踪发现IVehicle是在这里导入的` import android.hardware.automotive.vehicle.V2_0.IVehicle;`，而此代码是有诺博也就是HAL提供，我们看不到源码。我们只能根据在需要编译的Android整体源码目录下
+去找到相应的jar包，反编译可以看得到里面提供的方法。
 
