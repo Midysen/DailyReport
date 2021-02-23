@@ -54,7 +54,7 @@ mGetDataIDMap.put(DATA_ID_CAR_HVAC_PM2_5_LEVEL, GwmCarHvacManager.ID_GWM_T_BOX_F
 ```
 public static final String DATA_ID_CAR_HVAC_PM2_5_LEVEL = "car.hvac.pm2.5_level";
 ```
-
+注意：MyDataAdapter.java是不能自行修改的，是BeanID确认之后自动生成提供给我们使用的
 ## 这里要去建立BeanId对应的方法,仙豆写法
 ```
 mRequestDataOperationList.put( DATA_ID_CAR_HVAC_PM2_5_VALUE        ,mdoGetCarHvacPm25Value);
